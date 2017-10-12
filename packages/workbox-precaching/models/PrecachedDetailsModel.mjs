@@ -18,7 +18,7 @@ import {_private} from 'workbox-core';
 
 // Allows minifier to mangle this name
 const REVISON_IDB_FIELD = 'revision';
-
+const DB_STORE_NAME = 'precached-details-models';
 /**
  * This model will track the relevant information of entries that
  * are cached and their matching revision details.
@@ -60,7 +60,7 @@ class PrecachedDetailsModel {
    */
   async _getAllEntries() {
     const db = await this._getDb();
-    return await db.getAll();
+    return await db.getAll(DB_STORE_NAME);
   }
 
   /**
@@ -71,7 +71,7 @@ class PrecachedDetailsModel {
    */
   async _getRevision(entryId) {
     const db = await this._getDb();
-    const data = await db.get(entryId);
+    const data = await db.get(DB_STORE_NAME, entryId);
     return data ? data[REVISON_IDB_FIELD] : null;
   }
 
@@ -82,9 +82,13 @@ class PrecachedDetailsModel {
    */
   async _addEntry(precacheEntry) {
     const db = await this._getDb();
-    await db.put(precacheEntry._entryId, {
-      [REVISON_IDB_FIELD]: precacheEntry._revision,
-    });
+    await db.put(
+      DB_STORE_NAME,
+      {
+        [REVISON_IDB_FIELD]: precacheEntry._revision,
+      },
+      precacheEntry._entryId
+    );
   }
 
   /**
@@ -94,7 +98,7 @@ class PrecachedDetailsModel {
    */
   async _deleteEntry(entryId) {
     const db = await this._getDb();
-    await db.delete(entryId);
+    await db.delete(DB_STORE_NAME, entryId);
   }
 
   /**
@@ -103,8 +107,9 @@ class PrecachedDetailsModel {
    * @return{Promise<DBWrapper>}
    */
   _getDb() {
-    return _private.indexedDBHelper.getDB(
-      `workbox-precaching`, `precached-details-models`);
+    return _private.indexedDBHelper.getDB(`workbox-precaching`, 1, (db) => {
+      db.createObjectStore(DB_STORE_NAME);
+    });
   }
 }
 
