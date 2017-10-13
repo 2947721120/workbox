@@ -56,7 +56,7 @@ class WorkboxCore {
     }
 
     this._logLevel = (process.env.NODE_ENV === 'production') ?
-      LOG_LEVELS.warn : LOG_LEVELS.debug;
+      LOG_LEVELS.warn : LOG_LEVELS.log;
   }
 
   /**
